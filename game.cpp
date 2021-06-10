@@ -1,146 +1,178 @@
 #include<iostream>
 #include<random> //For Randomly Generating Value
 #include<string> //For String Variables
-#include<unistd.h> //For Sleep Pause
+#include<unistd.h> //For Sleep-Pause
 using namespace std;
 
-struct Card {
-    int number; 
-    string numberName;
-    int suit;
-    string suitName;
-};
-
-void Swap(Card *a, Card *b); //For simply Swapping the Cards
-void PlayAgain(); //The PlayAgain Option
-char playAgain = 'Y'; //The Default PlayAgain Option
-
-int main()
+struct Card
 {
-    Card card[3]; //The Cards
-    int c; //For Loop-control Cards
+    int number; 
+    int suit;
+    string numberName;
+    string suitName;
 
-    Card bet, guess; //The User Bet-Card & the chosen Guess-Card
-    int choose; //For User-Input to choose Bet-Card & Guess-Card
-    
-    random_device Seed; //RandomValue Generator
-    uniform_int_distribution<int> rand_card(0, 2); //For Randomly Choosing the Card
-    uniform_int_distribution<int> rand_number(2, 14); //For Randomly Choosing the CardNumber
-    uniform_int_distribution<int> rand_suit(1, 4); //For Randomly Choosing the CardSuit
-
-    cout << endl;
-    
-    do {
-        cout << "Lets Begin! \n\n";
-
-        //Randomly Choose and Display Three Cards
-        cout << "Here are the Cards: \n";
-        for(c=0; c<3; c++) {
-            card[c].number = rand_number(Seed); 
-            card[c].suit = rand_suit(Seed);
+    void syncNumberName() //To Sync the NumberName with the Integer-Number
+    {
+        switch(number)
+        {
+            case 2:
+                numberName = "Two"; break;
+            case 3:
+                numberName = "Three"; break;
+            case 4:
+                numberName = "Four"; break;
+            case 5:
+                numberName = "Five"; break;
+            case 6:
+                numberName = "Six"; break;
+            case 7:
+                numberName = "Seven"; break;
+            case 8:
+                numberName = "Eight"; break;
+            case 9:
+                numberName = "Nine"; break;
+            case 10:
+                numberName = "Ten"; break;
             
-            switch(card[c].number)
-            {
-                case 2:
-                    card[c].numberName = "Two"; break;
-                case 3:
-                    card[c].numberName = "Three"; break;
-                case 4:
-                    card[c].numberName = "Four"; break;
-                case 5:
-                    card[c].numberName = "Five"; break;
-                case 6:
-                    card[c].numberName = "Six"; break;
-                case 7:
-                    card[c].numberName = "Seven"; break;
-                case 8:
-                    card[c].numberName = "Eight"; break;
-                case 9:
-                    card[c].numberName = "Nine"; break;
-                case 10:
-                    card[c].numberName = "Ten"; break;
-                
-                case 11:
-                    card[c].numberName = "Jack"; break;
-                case 12:
-                    card[c].numberName = "Queen"; break;
-                case 13:
-                    card[c].numberName = "King"; break;
-                case 14:
-                    card[c].numberName = "Ace"; break;
-                
-                default:
-                    card[c].numberName = "No-Number";
-            }
+            case 11:
+                numberName = "Jack"; break;
+            case 12:
+                numberName = "Queen"; break;
+            case 13:
+                numberName = "King"; break;
+            case 14:
+                numberName = "Ace"; break;
             
-            switch(card[c].suit)
+            default:
+                numberName = "No-Number";
+        }
+    };
+    void syncSuitName() //To Sync the SuitName with the Integer-Suit
+    {
+        switch(suit)
             {
                 case 1:
-                    card[c].suitName = "Diamonds"; break;
+                    suitName = "Diamonds"; break;
                 case 2:
-                    card[c].suitName = "Hearts"; break;
+                    suitName = "Hearts"; break;
                 case 3:
-                    card[c].suitName = "Spades"; break;
+                    suitName = "Spades"; break;
                 case 4:
-                    card[c].suitName = "Clubs"; break;
+                    suitName = "Clubs"; break;
                 default:
-                    card[c].suitName = "No-Suit";
+                    suitName = "No-Suit";
             }
+    };
+};
 
-            cout << "  Card " << c+1 << ": The " << card[c].numberName << " of " << card[c].suitName << ". " << endl;
-        }
-        cout << endl;
+void GenerateCards();
+void chooseCard(Card&); //For Choosing the Card
+void Swap(Card, Card); //For simply Swapping the Cards
+void evaluate();
+void PlayAgain(); //The PlayAgain Option
+
+Card card[3]; //The Cards
+Card bet, guess; //The User Bet-Card & the chosen Guess-Card
+int c; //For Loop-control Cards
+
+int max_cIgnore = 255; //MaxCharacters to be Ignored in the Buffer
+char playAgain = 'Y'; //The Default PlayAgain Option
+
+random_device Seed; //RandomValue Generator
+uniform_int_distribution<int> rand_card(0, 2); //For Randomly Generating the Card
+uniform_int_distribution<int> rand_number(2, 14); //For Randomly Generating the CardNumber
+uniform_int_distribution<int> rand_suit(1, 4); //For Randomly Generating the CardSuit
+
+int main()
+{ 
+    cout << endl
+		<< "Welcome to the Sinlge-Player Card Guessing Game. \n"
+		<< "You are Advised to Consult the Readme File, before Playing the Game. \n"
+		<< endl;
+
+    do {
+        cout << "Lets Begin! \n\n";
         
-        //Choose the Bet-Card
+        GenerateCards();
+
         cout << "In Which Card to Put the Bet: ";
-        cin >> choose;
-        for(c=0; c<3; c++)
-            if(choose == c+1)
-                bet = card[c];
-        cout << endl << endl;
+        chooseCard(bet);
         
-        
-        //Swap the Cards Randomly
-        //cout << "Wait Until the Cards are being Swapped! " << endl;
         cout << "let me Swap the Cards! \n";
         for(c=0; c<3*2; c++)
-            Swap(&card[rand_card(Seed)], &card[rand_card(Seed)]);
+            Swap(card[rand_card(Seed)], card[rand_card(Seed)]);
         sleep(1);
         
-
-        //Guess the Choosen Bet-Card
         cout << "Ok Now Guess where The " << bet.numberName << " of " << bet.suitName << " (Your Bet-Card) is: ";
-        cin >> choose;
-        for(c=0; c<3; c++)
-            if(choose == c+1)
-                guess = card[c];
-        cout << endl;
+        chooseCard(guess);
 
-
-        //Compare the Guess-Card & Bet-Card
-        if(guess.number == bet.number && guess.suit == bet.suit)
-            cout << "Great! You Won! \n\n";
-        else {
-            cout << "Ahh! You Lose! \n";
-            for(c=0; c<3; c++)
-                if(bet.number == card[c].number && bet.suit == card[c].suit)
-                    cout << "It was on Card no." << c+1 << ". \n\n";
-        }
+        evaluate();
 
         PlayAgain();
     }
     while(playAgain == 'Y');
 
-
     cout << endl << endl;
     return 0;
 }
 
-void Swap(Card *a, Card *b)
+void GenerateCards()
 {
-    Card temp = *a;
-    *a = *b;
-    *b = temp;
+    cout << "Here are the Cards: \n";
+    for(c=0; c<3; c++) {
+        card[c].number = rand_number(Seed); 
+        card[c].suit = rand_suit(Seed);
+        
+        card[c].syncNumberName();
+        card[c].syncSuitName();
+        
+        cout << "  Card " << c+1 << ": The " << card[c].numberName << " of " << card[c].suitName << ". " << endl;
+    }
+    cout << endl;
+}
+
+void chooseCard(Card &n)
+{
+    int choose;
+    cin >> choose;
+    cin.ignore(max_cIgnore,'\n');
+			
+    if (cin.fail()) {
+        cin.clear(); cin.ignore(max_cIgnore,'\n');
+        cout << "   Oops! Its not the legal Card Number. \n\n";
+        cout << "Choose the Card Again: ";
+        chooseCard(n);
+    }
+    else if(!(choose>=1 && choose<=3)) {
+        cout << "   Oops! There's no such Card. \n";
+        cout << "Choose the Card Again: ";
+        chooseCard(n);
+    }
+    
+    for(c=0; c<3; c++)
+        if(choose == c+1)
+            n = card[c];
+    
+    cout << endl; //It would be Buffered each Time the Function Self-Calls
+}
+
+void Swap(Card a, Card b)
+{
+    Card temp = a;
+    a = b;
+    b = temp;
+}
+
+void evaluate()
+{
+    if(guess.number == bet.number && guess.suit == bet.suit)
+        cout << "Great! You Won! \n\n";
+    else {
+        cout << "Ahh! You Lose! \n";
+        for(c=0; c<3; c++)
+            if(bet.number == card[c].number && bet.suit == card[c].suit)
+                cout << "It was on Card no." << c+1 << ". \n\n";
+    }
 }
 
 void PlayAgain()
@@ -148,7 +180,8 @@ void PlayAgain()
 	cout << "Do You Want to Play Again (Y/N): ";
 	cin >> playAgain;
 	playAgain = toupper(playAgain);
-	
+	cin.ignore(max_cIgnore, '\n');
+
 	if(playAgain == 'Y') {
 		cout << endl << endl;
         return;
